@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>酷跑冒险岛</title>
+	<meta charset="utf-8">
+    <link rel="stylesheet" href="../../resources/css/reset2.0.css">
+	<link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="../../resources/js/jquery.min.js"></script>
+    <script src="../../resources/js/invoker_support.js"></script>
+    <script src="../../resources/js/onBack.js"></script>
+</head>
+<body class='body'>
+	<div class="content">
+        <div class="btnbox">
+            <ul>
+                
+            </ul>
+        </div>
+	</div>
+    <script>
+        //防止连击操作
+        function extreme(){
+            event.stopPropagation();
+            //阻止默认事件
+            if(event.preventDefault){
+                event.preventDefault();
+            }else{
+                window.event.returnValue == false;
+            }
+        }
+        window.addEventListener("keydown",extreme,true);
+        var baseUrl = "";
+        var imgjson = '';
+
+        //dom数组
+        var $domarr = [[],[],[]];
+        //当前选中的位置
+        var selectIndex = [1, 0];
+        
+        $.ajax({
+            url:baseUrl+"/web/subjectInfo/list",
+            data:{typeId:71},
+            type:"POST",
+            dataType:"json",
+            success:function(json){
+                imgjson = json;
+                //图片预加载
+                var imgload = 0;
+                for(var i = 0; i < imgjson.length; i++){
+                    for(var j = 1; j <= 2; j++){
+                        var image = new Image();
+                        image.src = imgjson[i]["icon"+j];
+                        $(image).load(function(){
+                            imgload++;
+                            if(imgload == imgjson.length * 2){
+                                dominit();
+                            }
+                        })                      
+                    }   
+                }
+            }
+        })
+
+        dominit()
+        function dominit(){
+            var str = '';
+            for(var i = 0; i < imgjson.length; i++){
+                str+='<li>'+
+                        '<button class="btn" onblur="btnb('+i+')" onfocus="btnf('+i+')" onclick="btnc('+i+')"  style="background:url('+imgjson[i].icon1+')"></button>'+
+                    '</li>'
+            }
+            $(".btnbox ul").append(str);
+            $btns = $(".btnbox ul button");
+
+            $domarr[0][0] = $btns.eq(2);
+            $domarr[0][1] = $btns.eq(0);
+            $domarr[0][2] = $btns.eq(1);
+            $domarr[1][0] = $btns.eq(2);
+            $domarr[1][1] = $btns.eq(3);
+            $domarr[1][2] = $btns.eq(4);
+            $domarr[2][0] = $btns.eq(5);
+            $domarr[2][1] = $btns.eq(5);
+            $domarr[2][2] = $btns.eq(5);
+
+            //默认选中
+            selection(selectIndex);
+            //开放键盘
+            window.removeEventListener("keydown",extreme,true);
+        }
+
+        function btnf(n){
+            $btns.eq(n).css({"background":"url("+imgjson[n].icon2+")","backgroundSize":"100% 100%"});
+        }
+
+        var $btnboxulli;
+        function btnb(n){
+            $btns.eq(n).css({"background":"url("+imgjson[n].icon1+")","backgroundSize":"100% 100%"});
+        }
+
+        function btnc(n){
+            console.log(n);
+            if(imgjson[n].url !=""){
+                window.location.href = imgjson[n].url;
+            }else {
+                AndroidInvoker.gotoAppDetails(imgjson[n].rid);
+                console.log(imgjson[n].rid);
+            }
+        }
+
+        //选中效果
+        function selection(arr){
+        	console.log(arr);
+            $domarr[arr[0]][arr[1]].focus();
+        }
+
+        //键盘事件
+        $(document).keydown(function(e){
+            //阻止默认事件
+            if(e.keyCode != 13){
+                if(event.preventDefault){
+                    event.preventDefault();
+                }else{
+                    window.event.returnValue == false;
+                }
+            }
+            if(e.keyCode == 37){
+                if(selectIndex[1] > 0) {
+                    selectIndex[1]--;
+                    selection(selectIndex);
+                }
+            }else if(e.keyCode == 39){
+                if(selectIndex[1] < 2) {
+                    selectIndex[1]++;
+                    selection(selectIndex);
+                } 
+            }else if(e.keyCode == 38){
+                if(selectIndex[0] > 0) {
+                    selectIndex[0]--;
+                    selection(selectIndex);
+                }   
+            }else if(e.keyCode == 40){
+                if(selectIndex[0] < 2) {
+                    selectIndex[0]++;
+                    selection(selectIndex);
+                }   
+            }
+        })
+    </script>
+</body>
+</html>
